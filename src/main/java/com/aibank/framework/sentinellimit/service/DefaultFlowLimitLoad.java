@@ -1,4 +1,4 @@
-package com.aibank.framework.sentinellimit;
+package com.aibank.framework.sentinellimit.service;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.db.Entity;
@@ -18,29 +18,27 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class FlowLimitService {
+public class DefaultFlowLimitLoad implements FlowLimitLoad {
     private DataSource dataSource;
 
     private String app;
 
-    public FlowLimitService(DataSource dataSource, String app) {
+    public DefaultFlowLimitLoad(DataSource dataSource, String app) {
         this.dataSource = dataSource;
         this.app = app;
     }
 
     public void init() {
         // 正常限流
-        loadFlowRule();
-
+        flowRule();
         // 系统高负荷限流
         overloadFlowRule();
-
         //系统负载限流
-        loadSystemRule();
-
+        systemRule();
     }
 
-    protected void loadFlowRule() {
+    @Override
+    public void flowRule() {
         String sql = "SELECT id, app, resource, control_behavior, count, grade, limit_app, strategy, effect_on_over_load, open, create_time," +
                 "update_time, created_by, updated_by FROM flow_rule where open = 1 and effect_on_over_load = 0 and app='" + app + "' ";
         ReadableDataSource<List<Entity>, List<FlowRule>> readableDataSource = new JdbcDataSource<>(dataSource, sql, source -> source.stream().map(s -> {
@@ -49,12 +47,12 @@ public class FlowLimitService {
             FlowRule flowRule = new FlowRule();
             BeanUtil.copyProperties(flowRuleEntity, flowRule);
             return flowRule;
-
         }).collect(Collectors.toList()));
         FlowRuleManager.register2Property(readableDataSource.getProperty());
     }
 
-    protected void overloadFlowRule() {
+    @Override
+    public void overloadFlowRule() {
         String sql = "SELECT id, app, resource, control_behavior, count, grade, limit_app, strategy, effect_on_over_load, open, create_time," +
                 "update_time, created_by, updated_by FROM flow_rule where open = 1 and effect_on_over_load = 1 and app='" + app + "' ";
         ReadableDataSource<List<Entity>, List<FlowRule>> readableDataSource = new JdbcDataSource<>(dataSource, sql, source -> source.stream().map(s -> {
@@ -63,12 +61,12 @@ public class FlowLimitService {
             FlowRule flowRule = new FlowRule();
             BeanUtil.copyProperties(flowRuleEntity, flowRule);
             return flowRule;
-
         }).collect(Collectors.toList()));
         OverloadFlowRuleManager.register2Property(readableDataSource.getProperty());
     }
 
-    protected void loadSystemRule() {
+    @Override
+    public void systemRule() {
         String sql = "select id, app, highest_system_load, highest_cpu_usage, qps, avg_rt, max_thread,system_overload_flag, open, create_time, update_time, created_by, updated_by from system_rule where open = 1 and app='" + app + "'";
         ReadableDataSource<List<Entity>, List<SystemRule>> readableDataSource = new JdbcDataSource<>(dataSource, sql, source -> source.stream().map(s -> {
             SystemRuleEntity systemRuleEntity = new SystemRuleEntity();

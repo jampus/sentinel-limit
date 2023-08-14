@@ -1,7 +1,11 @@
 
 package com.aibank.framework.sentinellimit.rule;
 
+import com.aibank.framework.sentinellimit.CustomerMetricTimerListener;
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
+import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
+import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
@@ -14,6 +18,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class OverloadFlowRuleManager {
 
@@ -22,8 +29,17 @@ public class OverloadFlowRuleManager {
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
 
+    private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
+            new NamedThreadFactory("sentinel-metrics-record-task", true));
+
     static {
         currentProperty.addListener(LISTENER);
+        startMetricTimerListener();
+    }
+
+    private static void startMetricTimerListener() {
+        long flushInterval = 1;
+        SCHEDULER.scheduleAtFixedRate(new CustomerMetricTimerListener(), 0, flushInterval, TimeUnit.SECONDS);
     }
 
     public static void register2Property(SentinelProperty<List<FlowRule>> property) {

@@ -3,12 +3,15 @@ package com.aibank.framework.sentinellimit;
 import cn.hutool.core.util.RandomUtil;
 import com.aibank.framework.sentinellimit.rule.GlobalOverloadConfig;
 import com.aibank.framework.sentinellimit.rule.OverloadFlowRuleManager;
+import com.aibank.framework.sentinellimit.service.DefaultFlowLimitLoad;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.context.ContextUtil;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
 import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 import com.alibaba.druid.pool.DruidDataSource;
@@ -19,6 +22,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class TestFlowRules {
 
@@ -42,23 +48,41 @@ public class TestFlowRules {
         dataSource.setMaxPoolPreparedStatementPerConnectionSize(20);
         return dataSource;
     }
+
     @Test
     public void testFlowRules() throws InterruptedException {
         DataSource dataSource = createDataSource();
         // initFlowRules();
-        FlowLimitService flowLimitService = new FlowLimitService(dataSource, "237000");
+        DefaultFlowLimitLoad flowLimitService = new DefaultFlowLimitLoad(dataSource, "237000");
         flowLimitService.init();
-        for (int i = 0; i < 10; i++) {
-            new Thread(() -> accessHelloWorld()).start();
+
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        while (true) {
+            executorService.submit(() -> {
+                //  System.out.println("executorService : " + executorService.toString());
+                try {
+                    accessHelloWorld();
+                } catch (BlockException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            Thread.sleep(50);
         }
-        new CountDownLatch(1).await();
+
+        // FlowRuleManager.loadRules(new ArrayList<>());
     }
 
     @Test
     public void testSystemRules() throws InterruptedException {
         initSystemRules();
         for (int i = 0; i < 10; i++) {
-            new Thread(() -> accessHelloWorld()).start();
+            new Thread(() -> {
+                try {
+                    accessHelloWorld();
+                } catch (BlockException e) {
+                    throw new RuntimeException(e);
+                }
+            }).start();
         }
         new CountDownLatch(1).await();
     }
@@ -121,27 +145,32 @@ public class TestFlowRules {
         OverloadFlowRuleManager.loadRules(flowRules);
     }
 
-    private static void accessHelloWorld() {
-        while (true) {
-            try {
-                ContextUtil.enter("OPT", "237001");
-                Entry entry = SphU.entry("HelloWorld", EntryType.IN);
-                if (entry != null) {
-                    System.out.println("acquire success");
-                    entry.exit();
-                } else {
-                    System.out.println("acquire fail");
+    private static void accessHelloWorld() throws BlockException {
+        Entry entry = null;
+        try {
+            ContextUtil.enter("OPT", "237001");
+            entry = SphU.entry("HelloWorld", EntryType.IN);
+
+            if (entry != null) {
+                System.out.println("acquire success");
+                try {
+                    TimeUnit.MILLISECONDS.sleep(RandomUtil.randomInt(1000));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (Exception e) {
-                e.fillInStackTrace().printStackTrace();
-            }
-            // sleep 1 s
-            try {
-                Thread.sleep(RandomUtil.randomInt(1000));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+
+            } else {
+                System.out.println("acquire fail");
             }
 
+        } catch (BlockException e) {
+            System.out.println("acquire fail");
+            throw e;
+        } finally {
+            if (entry != null) {
+                entry.exit();
+            }
         }
     }
+
 }

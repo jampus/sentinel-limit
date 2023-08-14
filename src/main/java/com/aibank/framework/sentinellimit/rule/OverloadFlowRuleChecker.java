@@ -1,5 +1,6 @@
 package com.aibank.framework.sentinellimit.rule;
 
+import com.aibank.framework.sentinellimit.exception.SystemLoadFlowException;
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.context.Context;
@@ -25,7 +26,7 @@ public class OverloadFlowRuleChecker extends FlowRuleChecker {
         if (rules != null) {
             for (FlowRule rule : rules) {
                 if (!canPassCheck(resource, rule, context, node, count, prioritized)) {
-                    throw new FlowException(rule.getLimitApp(), rule);
+                    throw new SystemLoadFlowException(rule.getLimitApp(), rule);
                 }
             }
         }
