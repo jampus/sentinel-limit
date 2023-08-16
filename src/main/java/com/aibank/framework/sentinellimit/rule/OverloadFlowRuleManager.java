@@ -1,11 +1,9 @@
 
 package com.aibank.framework.sentinellimit.rule;
 
-import com.aibank.framework.sentinellimit.CustomerMetricTimerListener;
+import com.aibank.framework.sentinellimit.log.MetricPrintTask;
 import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
-import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
-import com.alibaba.csp.sentinel.node.metric.MetricTimerListener;
 import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
@@ -39,7 +37,7 @@ public class OverloadFlowRuleManager {
 
     private static void startMetricTimerListener() {
         long flushInterval = 1;
-        SCHEDULER.scheduleAtFixedRate(new CustomerMetricTimerListener(), 0, flushInterval, TimeUnit.SECONDS);
+        SCHEDULER.scheduleAtFixedRate(new MetricPrintTask(), 0, flushInterval, TimeUnit.SECONDS);
     }
 
     public static void register2Property(SentinelProperty<List<FlowRule>> property) {
@@ -74,7 +72,7 @@ public class OverloadFlowRuleManager {
         currentProperty.updateValue(rules);
     }
 
-    static Map<String, List<FlowRule>> getFlowRuleMap() {
+    public static Map<String, List<FlowRule>> getFlowRuleMap() {
         return flowRules;
     }
 

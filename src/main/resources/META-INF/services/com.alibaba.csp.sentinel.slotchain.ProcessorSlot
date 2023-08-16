@@ -1,3 +1,3 @@
 # Custom ProcessorSlot
-com.aibank.framework.sentinellimit.rule.SystemLoadFlowSlot
-com.aibank.framework.sentinellimit.log.CustomerLogSlot
+com.aibank.framework.sentinellimit.slot.SystemLoadFlowSlot
+com.aibank.framework.sentinellimit.slot.BlockLogSlot

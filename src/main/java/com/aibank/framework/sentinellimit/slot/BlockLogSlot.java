@@ -1,4 +1,4 @@
-package com.aibank.framework.sentinellimit.log;
+package com.aibank.framework.sentinellimit.slot;
 
 import com.aibank.framework.sentinellimit.dao.entity.BlockInfoEntity;
 import com.aibank.framework.sentinellimit.service.DefaultBlockRequestInfoRecord;
@@ -16,7 +16,7 @@ import javax.sql.DataSource;
 import java.util.Date;
 
 @Spi(order = Constants.ORDER_LOG_SLOT)
-public class CustomerLogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
+public class BlockLogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     public static DataSource createDataSource() {
         DruidDataSource dataSource = new DruidDataSource();
@@ -79,6 +79,9 @@ public class CustomerLogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             blockInfoEntity.setAvgRt(obj.avgRt());
             blockInfoEntity.setCreateTime(new Date());
             defaultBlockRequestInfoRecord.blockInfoRecord(blockInfoEntity);
+
+           // System.out.println(stringBuffer);
+            throw e;
         } catch (Throwable e) {
             System.out.println(e.getStackTrace());
             RecordLog.warn("Unexpected entry exception", e);

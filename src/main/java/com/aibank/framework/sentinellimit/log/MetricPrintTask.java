@@ -1,23 +1,19 @@
-package com.aibank.framework.sentinellimit;
+package com.aibank.framework.sentinellimit.log;
 
 import com.alibaba.csp.sentinel.Constants;
-import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.ClusterNode;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
-import com.alibaba.csp.sentinel.node.metric.MetricWriter;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
 import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 
-public class CustomerMetricTimerListener implements Runnable {
-
+public class MetricPrintTask implements Runnable {
     @Override
     public void run() {
         Map<Long, List<MetricNode>> maps = new TreeMap<>();

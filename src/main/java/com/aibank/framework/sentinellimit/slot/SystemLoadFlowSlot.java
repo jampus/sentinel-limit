@@ -1,5 +1,7 @@
-package com.aibank.framework.sentinellimit.rule;
+package com.aibank.framework.sentinellimit.slot;
 
+import com.aibank.framework.sentinellimit.rule.OverloadFlowRuleChecker;
+import com.aibank.framework.sentinellimit.rule.OverloadFlowRuleManager;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
