@@ -1,4 +1,4 @@
-package com.aibank.framework.sentinellimit.log;
+package com.aibank.framework.sentinellimit.slot;
 
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.context.Context;
@@ -10,7 +10,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.spi.Spi;
 
 @Spi(order = Constants.ORDER_LOG_SLOT)
-public class CustomerLogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
+public class BlockLogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode obj, int count, boolean prioritized, Object... args)
@@ -34,7 +34,8 @@ public class CustomerLogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                     .append("threadNum: ").append(obj.curThreadNum()).append("\n");
 
                  
-            System.out.println(stringBuffer);
+           // System.out.println(stringBuffer);
+            throw e;
         } catch (Throwable e) {
             RecordLog.warn("Unexpected entry exception", e);
         }
