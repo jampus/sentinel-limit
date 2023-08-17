@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.aibank.framework.sentinellimit;
+package com.aibank.framework.sentinellimit.slot;
 
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.slotchain.*;
@@ -43,7 +43,7 @@ public class CustomerSlotChainBuilder implements SlotChainBuilder {
                 RecordLog.warn("The ProcessorSlot(" + slot.getClass().getCanonicalName() + ") is not an instance of AbstractLinkedProcessorSlot, can't be added into ProcessorSlotChain");
                 continue;
             }
-            if (slot instanceof LogSlot){
+            if (slot instanceof LogSlot) {
                 continue;
             }
             chain.addLast((AbstractLinkedProcessorSlot<?>) slot);

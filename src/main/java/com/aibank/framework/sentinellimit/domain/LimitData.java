@@ -219,4 +219,26 @@ public class LimitData {
     public void setTotalBlock(Long totalBlock) {
         this.totalBlock = totalBlock;
     }
+
+    @Override
+    public String toString() {
+        return "LimitData{" +
+                "timestamp=" + timestamp +
+                ", resource='" + resource + '\'' +
+                ", entryType=" + entryType +
+                ", limitType=" + limitType +
+                ", systemLimitType=" + systemLimitType +
+                ", transId='" + transId + '\'' +
+                ", overloadConfigValue=" + overloadConfigValue +
+                ", overloadValue=" + overloadValue +
+                ", limitConfigValue=" + limitConfigValue +
+                ", limitValue=" + limitValue +
+                ", totalQps=" + totalQps +
+                ", passQps=" + passQps +
+                ", blockQps=" + blockQps +
+                ", totalRequest=" + totalRequest +
+                ", totalPass=" + totalPass +
+                ", totalBlock=" + totalBlock +
+                '}';
+    }
 }
