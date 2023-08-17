@@ -16,21 +16,23 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 
-public class JdbcDataSource<T> extends AbstractDataSource<List<Entity>, T> {
+public class JdbcDataSource<E, T> extends AbstractDataSource<List<E>, T> {
     private static Logger logger = LoggerFactory.getLogger(JdbcDataSource.class);
     private static final ScheduledExecutorService service = Executors.newScheduledThreadPool(1, new NamedThreadFactory("sentinel-datasource-auto-refresh-task", true));
-    protected static long recommendRefreshMs = 5000;
+    protected static long recommendRefreshMs = 3000;
 
-    private String getAllSql;
+    private Supplier<List<E>> supplier;
     private DataSource dataSource;
 
 
-    public JdbcDataSource(DataSource dataSource, String getAllSql, Converter<List<Entity>, T> parser) {
+    public JdbcDataSource(DataSource dataSource, Supplier<List<E>> supplier, Converter<List<E>, T> parser) {
         super(parser);
         AssertUtil.notNull(dataSource, "dataSource can not be empty");
-        this.getAllSql = getAllSql;
+        this.supplier = supplier;
         this.dataSource = dataSource;
         loadInitialConfig();
         startTimerService();
@@ -49,13 +51,8 @@ public class JdbcDataSource<T> extends AbstractDataSource<List<Entity>, T> {
     }
 
     @Override
-    public List<Entity> readSource() {
-        try {
-            List<Entity> query = Db.use(dataSource).query(getAllSql);
-            return query;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    public List<E> readSource() {
+        return supplier.get();
     }
 
     protected boolean isModified() {

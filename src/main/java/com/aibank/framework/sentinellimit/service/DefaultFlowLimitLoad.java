@@ -1,9 +1,7 @@
 package com.aibank.framework.sentinellimit.service;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.db.Entity;
-import com.aibank.framework.sentinellimit.dao.BlockInfoRecordMapper;
-import com.aibank.framework.sentinellimit.dao.BlockInfoRecordMapperImpl;
+import com.aibank.framework.sentinellimit.dao.*;
 import com.aibank.framework.sentinellimit.dao.entity.FlowRuleEntity;
 import com.aibank.framework.sentinellimit.dao.entity.SystemRuleEntity;
 import com.aibank.framework.sentinellimit.datasource.JdbcDataSource;
@@ -30,26 +28,19 @@ import java.util.stream.Collectors;
 public class DefaultFlowLimitLoad implements FlowLimitLoad {
     private DataSource dataSource;
 
-    private String app;
-
     private final ScheduledExecutorService executorService;
     private BlockInfoRecordMapper blockInfoRecordMapper;
+    private FlowRuleMapper flowRuleMapper;
+    private SystemRuleMapper systemRuleMapper;
 
 
     public DefaultFlowLimitLoad(DataSource dataSource, String app) {
         this.dataSource = dataSource;
-        this.app = app;
         LimitConstants.app = app;
         executorService = new ScheduledThreadPoolExecutor(5, new NamedThreadFactory("sentinel-record-task", true));
         blockInfoRecordMapper = new BlockInfoRecordMapperImpl(dataSource);
-    }
-
-    public DefaultFlowLimitLoad(DataSource dataSource, String app, ScheduledExecutorService executorService, BlockInfoRecordMapper blockInfoRecordMapper) {
-        this.dataSource = dataSource;
-        this.app = app;
-        LimitConstants.app = app;
-        this.executorService = executorService;
-        this.blockInfoRecordMapper = blockInfoRecordMapper;
+        flowRuleMapper = new FlowRuleMapperImpl(dataSource);
+        systemRuleMapper = new SystemRuleMapperImpl(dataSource);
     }
 
     public void init() {
@@ -61,6 +52,11 @@ public class DefaultFlowLimitLoad implements FlowLimitLoad {
         systemRule();
         // 启动定时任务
         scheduleTask();
+
+        assert executorService != null;
+        assert blockInfoRecordMapper != null;
+        assert flowRuleMapper != null;
+        assert systemRuleMapper != null;
     }
 
     protected void scheduleTask() {
@@ -73,16 +69,11 @@ public class DefaultFlowLimitLoad implements FlowLimitLoad {
     }
 
 
-    //TODO  sql 写在 mapper 里面
     @Override
     public void flowRule() {
-        String sql = "SELECT id, app, resource, control_behavior, count, grade, limit_app, strategy, effect_on_over_load, open, create_time," +
-                "update_time, created_by, updated_by FROM flow_rule where open = 1 and effect_on_over_load = 0 and app='" + app + "' ";
-        ReadableDataSource<List<Entity>, List<FlowRule>> readableDataSource = new JdbcDataSource<>(dataSource, sql, source -> source.stream().map(s -> {
-            FlowRuleEntity flowRuleEntity = new FlowRuleEntity();
-            BeanUtil.fillBeanWithMap(s, flowRuleEntity, true, true);
+        ReadableDataSource<List<FlowRuleEntity>, List<FlowRule>> readableDataSource = new JdbcDataSource<>(dataSource, flowRuleMapper::getAllFlowRule, source -> source.stream().map(s -> {
             FlowRule flowRule = new FlowRule();
-            BeanUtil.copyProperties(flowRuleEntity, flowRule);
+            BeanUtil.copyProperties(s, flowRule);
             return flowRule;
         }).collect(Collectors.toList()));
         FlowRuleManager.register2Property(readableDataSource.getProperty());
@@ -90,13 +81,9 @@ public class DefaultFlowLimitLoad implements FlowLimitLoad {
 
     @Override
     public void overloadFlowRule() {
-        String sql = "SELECT id, app, resource, control_behavior, count, grade, limit_app, strategy, effect_on_over_load, open, create_time," +
-                "update_time, created_by, updated_by FROM flow_rule where open = 1 and effect_on_over_load = 1 and app='" + app + "' ";
-        ReadableDataSource<List<Entity>, List<FlowRule>> readableDataSource = new JdbcDataSource<>(dataSource, sql, source -> source.stream().map(s -> {
-            FlowRuleEntity flowRuleEntity = new FlowRuleEntity();
-            BeanUtil.fillBeanWithMap(s, flowRuleEntity, true, true);
+        ReadableDataSource<List<FlowRuleEntity>, List<FlowRule>> readableDataSource = new JdbcDataSource<>(dataSource, flowRuleMapper::getAllOverloadFlowRule, source -> source.stream().map(s -> {
             FlowRule flowRule = new FlowRule();
-            BeanUtil.copyProperties(flowRuleEntity, flowRule);
+            BeanUtil.copyProperties(s, flowRule);
             return flowRule;
         }).collect(Collectors.toList()));
         OverloadFlowRuleManager.register2Property(readableDataSource.getProperty());
@@ -104,15 +91,10 @@ public class DefaultFlowLimitLoad implements FlowLimitLoad {
 
     @Override
     public void systemRule() {
-        String sql = "select id, app, highest_system_load, highest_cpu_usage, qps, avg_rt, max_thread,system_overload_flag, open, create_time, update_time, created_by, updated_by from system_rule where open = 1 and app='" + app + "'";
-        ReadableDataSource<List<Entity>, List<SystemRule>> readableDataSource = new JdbcDataSource<>(dataSource, sql, source -> source.stream().map(s -> {
-            SystemRuleEntity systemRuleEntity = new SystemRuleEntity();
-            BeanUtil.fillBeanWithMap(s, systemRuleEntity, true, true);
-
+        ReadableDataSource<List<SystemRuleEntity>, List<SystemRule>> readableDataSource = new JdbcDataSource<>(dataSource, systemRuleMapper::getAllRule, source -> source.stream().map(s -> {
             SystemRule systemRule = new SystemRule();
-            BeanUtil.copyProperties(systemRuleEntity, systemRule);
-
-            if (systemRuleEntity.getSystemOverloadFlag()) {
+            BeanUtil.copyProperties(s, systemRule);
+            if (s.getSystemOverloadFlag()) {
                 GlobalOverloadConfig.loadConfig(systemRule);
                 return null;
             } else {
@@ -120,5 +102,17 @@ public class DefaultFlowLimitLoad implements FlowLimitLoad {
             }
         }).filter(Objects::nonNull).collect(Collectors.toList()));
         SystemRuleManager.register2Property(readableDataSource.getProperty());
+    }
+
+    public void setBlockInfoRecordMapper(BlockInfoRecordMapper blockInfoRecordMapper) {
+        this.blockInfoRecordMapper = blockInfoRecordMapper;
+    }
+
+    public void setFlowRuleMapper(FlowRuleMapper flowRuleMapper) {
+        this.flowRuleMapper = flowRuleMapper;
+    }
+
+    public void setSystemRuleMapper(SystemRuleMapper systemRuleMapper) {
+        this.systemRuleMapper = systemRuleMapper;
     }
 }
