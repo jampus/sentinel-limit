@@ -1,7 +1,8 @@
-package com.aibank.framework.sentinellimit.dao;
+package com.aibank.framework.sentinellimit.dao.impl;
 
 import cn.hutool.db.Db;
 import cn.hutool.db.Entity;
+import com.aibank.framework.sentinellimit.dao.BlockInfoRecordMapper;
 import com.aibank.framework.sentinellimit.dao.entity.BlockInfoEntity;
 
 import javax.sql.DataSource;

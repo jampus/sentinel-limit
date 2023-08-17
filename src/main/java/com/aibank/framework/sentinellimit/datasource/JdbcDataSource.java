@@ -67,6 +67,7 @@ public class JdbcDataSource<E, T> extends AbstractDataSource<List<E>, T> {
                     }
                     T newValue = loadConfig();
                     getProperty().updateValue(newValue);
+
                 } catch (Throwable e) {
                     logger.info("loadConfig exception", e);
                 }

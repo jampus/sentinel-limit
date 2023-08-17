@@ -1,8 +1,9 @@
-package com.aibank.framework.sentinellimit.dao;
+package com.aibank.framework.sentinellimit.dao.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.db.Db;
 import cn.hutool.db.Entity;
+import com.aibank.framework.sentinellimit.dao.SystemRuleMapper;
 import com.aibank.framework.sentinellimit.dao.entity.FlowRuleEntity;
 import com.aibank.framework.sentinellimit.dao.entity.SystemRuleEntity;
 import com.aibank.framework.sentinellimit.domain.LimitConstants;
@@ -12,7 +13,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SystemRuleMapperImpl implements SystemRuleMapper{
+public class SystemRuleMapperImpl implements SystemRuleMapper {
 
     private DataSource dataSource;
 

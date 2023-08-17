@@ -34,11 +34,11 @@ public class BlockLogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             LimitData limitData = getLimitData(e, resourceWrapper, obj, count);
             limitData.setTransId(TransIdHolder.getTransId());
             //打印日志
-            RecordLog.warn("trigger limited : {}", limitData);
+           // RecordLog.warn("trigger limited : {}", limitData);
 
             boolean offered = BLOCK_LOG_QUEUE.offer(limitData);
             if (!offered) {
-                RecordLog.warn("put block  error ,queue is full ");
+           //     RecordLog.warn("put block  error ,queue is full ");
             }
             throw e;
         } catch (Throwable e) {

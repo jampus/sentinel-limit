@@ -43,11 +43,14 @@ public class RecordsBlockTask implements Runnable {
             } catch (InterruptedException e) {
                 return;
             }
-            if ((limitData == null && blockInfoEntityList.isEmpty()) || blockInfoEntityList.size() >= 100) {
+            if ((limitData == null && !blockInfoEntityList.isEmpty()) || blockInfoEntityList.size() >= 100) {
                 // 暂不聚合,只做批量插入
                 blockInfoRecordMapper.batchInsert(blockInfoEntityList);
                 blockInfoEntityList.clear();
                 continue;
+            }
+            if (limitData == null) {
+                return;
             }
             blockInfoEntityList.add(getBlockInfoEntity(limitData));
         }
