@@ -44,6 +44,11 @@ public class DefaultFlowLimitLoad implements FlowLimitLoad {
     }
 
     public void init() {
+        assert executorService != null;
+        assert blockInfoRecordMapper != null;
+        assert flowRuleMapper != null;
+        assert systemRuleMapper != null;
+
         // 正常限流
         flowRule();
         // 系统高负荷限流
@@ -53,10 +58,6 @@ public class DefaultFlowLimitLoad implements FlowLimitLoad {
         // 启动定时任务
         scheduleTask();
 
-        assert executorService != null;
-        assert blockInfoRecordMapper != null;
-        assert flowRuleMapper != null;
-        assert systemRuleMapper != null;
     }
 
     protected void scheduleTask() {
