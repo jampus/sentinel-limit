@@ -1,4 +1,4 @@
-package com.aibank.framework.sentinellimit.log;
+package com.aibank.framework.sentinellimit.task;
 
 import com.alibaba.csp.sentinel.Constants;
 import com.alibaba.csp.sentinel.log.RecordLog;
