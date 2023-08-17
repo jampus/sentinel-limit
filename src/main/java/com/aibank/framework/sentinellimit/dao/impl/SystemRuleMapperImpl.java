@@ -25,17 +25,10 @@ public class SystemRuleMapperImpl implements SystemRuleMapper {
     public List<SystemRuleEntity> getAllRule() {
         String app = LimitConstants.app;
         String sql = "select id, app, highest_system_load, highest_cpu_usage, qps, avg_rt, max_thread,system_overload_flag, open, create_time, update_time, created_by, updated_by from system_rule where open = 1 and app='" + app + "'";
-        List<Entity> list;
         try {
-            list = Db.use(dataSource).query(sql);
+            return Db.use(dataSource).query(sql, SystemRuleEntity.class);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        List<SystemRuleEntity> ruleEntities = list.stream().map(s -> {
-            SystemRuleEntity entity = new SystemRuleEntity();
-            BeanUtil.fillBeanWithMap(s, entity, true, true);
-            return entity;
-        }).collect(Collectors.toList());
-        return ruleEntities;
     }
 }

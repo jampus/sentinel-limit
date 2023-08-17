@@ -62,7 +62,7 @@ public class BlockLogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         if (e instanceof FlowException) {
             FlowRule rule = (FlowRule) e.getRule();
             limitData.setLimitType(LimitType.flowRule);
-            //只考虑 qps,不考虑线程数
+            // TODO 只考虑 qps,不考虑线程数
             limitData.setLimitValue(node.totalQps());
             limitData.setLimitConfigValue(rule.getCount());
         } else if (e instanceof SystemBlockException) {

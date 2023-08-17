@@ -28,7 +28,7 @@ public class MetricPrintTask implements Runnable {
                 try {
                     //TODO  打印到 业务日志文件, 硬件数据
                     for (MetricNode metricNode : entry.getValue()) {
-                        RecordLog.warn(metricNode.toFatString());
+                     //   RecordLog.warn(metricNode.toFatString());
                     }
                 } catch (Exception e) {
                    // RecordLog.warn("[MetricTimerListener] Write metric error", e);

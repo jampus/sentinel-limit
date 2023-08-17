@@ -59,11 +59,11 @@ public class TestFlowRules {
         // initFlowRules();
         DefaultFlowLimitLoad flowLimitService = new DefaultFlowLimitLoad(dataSource, "237000");
         flowLimitService.init();
-      //  SampleCountProperty.SAMPLE_COUNT = 1;
+        //  SampleCountProperty.SAMPLE_COUNT = 1;
 
-      //  ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(50, new NamedThreadFactory("test-task", true));
+        //  ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(50, new NamedThreadFactory("test-task", true));
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 20; i++) {
             new Thread(runnable).start();
         }
         new CountDownLatch(1).await();
@@ -71,7 +71,7 @@ public class TestFlowRules {
     }
 
     Runnable runnable = () -> {
-        //while (true) {
+        while (true) {
             StopWatch stopWatch = StopWatch.create("1");
             stopWatch.start();
             try {
@@ -80,12 +80,12 @@ public class TestFlowRules {
                 stopWatch.stop();
                 //  System.out.println(" 调用耗时 " + (stopWatch.getTotalTimeMillis() - 1000l));
                 long l = cost.addAndGet(stopWatch.getTotalTimeMillis() - 1000) / count.incrementAndGet();
-                System.out.println(" 平均睡眠 " + l);
+             //   System.out.println(" 平均睡眠 " + l);
             } catch (BlockException e) {
                 e.printStackTrace();
                 // throw new RuntimeException(e);
             }
-       // }
+        }
     };
 
     @Test
