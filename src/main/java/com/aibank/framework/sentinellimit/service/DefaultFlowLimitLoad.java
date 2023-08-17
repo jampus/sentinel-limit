@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class DefaultFlowLimitLoad implements FlowLimitLoad {
-    private DataSource dataSource;
 
     private final ScheduledExecutorService executorService;
     private BlockInfoRecordMapper blockInfoRecordMapper;
@@ -35,7 +34,6 @@ public class DefaultFlowLimitLoad implements FlowLimitLoad {
 
 
     public DefaultFlowLimitLoad(DataSource dataSource, String app) {
-        this.dataSource = dataSource;
         LimitConstants.app = app;
         executorService = new ScheduledThreadPoolExecutor(5, new NamedThreadFactory("sentinel-record-task", true));
         blockInfoRecordMapper = new BlockInfoRecordMapperImpl(dataSource);
@@ -72,7 +70,7 @@ public class DefaultFlowLimitLoad implements FlowLimitLoad {
 
     @Override
     public void flowRule() {
-        ReadableDataSource<List<FlowRuleEntity>, List<FlowRule>> readableDataSource = new JdbcDataSource<>(dataSource, flowRuleMapper::getAllFlowRule, source -> source.stream().map(s -> {
+        ReadableDataSource<List<FlowRuleEntity>, List<FlowRule>> readableDataSource = new JdbcDataSource<>(flowRuleMapper::getAllFlowRule, source -> source.stream().map(s -> {
             FlowRule flowRule = new FlowRule();
             BeanUtil.copyProperties(s, flowRule);
             return flowRule;
@@ -82,7 +80,7 @@ public class DefaultFlowLimitLoad implements FlowLimitLoad {
 
     @Override
     public void overloadFlowRule() {
-        ReadableDataSource<List<FlowRuleEntity>, List<FlowRule>> readableDataSource = new JdbcDataSource<>(dataSource, flowRuleMapper::getAllOverloadFlowRule, source -> source.stream().map(s -> {
+        ReadableDataSource<List<FlowRuleEntity>, List<FlowRule>> readableDataSource = new JdbcDataSource<>(flowRuleMapper::getAllOverloadFlowRule, source -> source.stream().map(s -> {
             FlowRule flowRule = new FlowRule();
             BeanUtil.copyProperties(s, flowRule);
             return flowRule;
@@ -92,7 +90,7 @@ public class DefaultFlowLimitLoad implements FlowLimitLoad {
 
     @Override
     public void systemRule() {
-        ReadableDataSource<List<SystemRuleEntity>, List<SystemRule>> readableDataSource = new JdbcDataSource<>(dataSource, systemRuleMapper::getAllRule, source -> source.stream().map(s -> {
+        ReadableDataSource<List<SystemRuleEntity>, List<SystemRule>> readableDataSource = new JdbcDataSource<>(systemRuleMapper::getAllRule, source -> source.stream().map(s -> {
             SystemRule systemRule = new SystemRule();
             BeanUtil.copyProperties(s, systemRule);
             if (s.getSystemOverloadFlag()) {

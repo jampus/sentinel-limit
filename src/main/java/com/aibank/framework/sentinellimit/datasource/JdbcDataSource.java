@@ -26,14 +26,10 @@ public class JdbcDataSource<E, T> extends AbstractDataSource<List<E>, T> {
     protected static long recommendRefreshMs = 3000;
 
     private Supplier<List<E>> supplier;
-    private DataSource dataSource;
 
-
-    public JdbcDataSource(DataSource dataSource, Supplier<List<E>> supplier, Converter<List<E>, T> parser) {
+    public JdbcDataSource(Supplier<List<E>> supplier, Converter<List<E>, T> parser) {
         super(parser);
-        AssertUtil.notNull(dataSource, "dataSource can not be empty");
         this.supplier = supplier;
-        this.dataSource = dataSource;
         loadInitialConfig();
         startTimerService();
     }
