@@ -11,7 +11,9 @@ import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.DefaultNode;
 import com.alibaba.csp.sentinel.slotchain.AbstractLinkedProcessorSlot;
 import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
+import com.alibaba.csp.sentinel.slots.block.AbstractRule;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowException;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.system.SystemBlockException;
@@ -34,11 +36,11 @@ public class BlockLogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             LimitData limitData = getLimitData(e, resourceWrapper, obj, count);
             limitData.setTransId(TransIdHolder.getTransId());
             //打印日志
-           // RecordLog.warn("trigger limited : {}", limitData);
+            // RecordLog.warn("trigger limited : {}", limitData);
 
             boolean offered = BLOCK_LOG_QUEUE.offer(limitData);
             if (!offered) {
-           //     RecordLog.warn("put block  error ,queue is full ");
+                //     RecordLog.warn("put block  error ,queue is full ");
             }
             throw e;
         } catch (Throwable e) {
@@ -58,12 +60,13 @@ public class BlockLogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
 
     private LimitData getLimitData(BlockException e, ResourceWrapper resourceWrapper, DefaultNode node, int count) {
+
         LimitData limitData = new LimitData();
         if (e instanceof FlowException) {
             FlowRule rule = (FlowRule) e.getRule();
             limitData.setLimitType(LimitType.flowRule);
-            // TODO 只考虑 qps,不考虑线程数
-            limitData.setLimitValue(node.totalQps());
+            double limitValue = rule.getGrade() == RuleConstant.FLOW_GRADE_THREAD ? (double) node.curThreadNum() : (int) (node.passQps());
+            limitData.setLimitValue(limitValue);
             limitData.setLimitConfigValue(rule.getCount());
         } else if (e instanceof SystemBlockException) {
             SystemBlockException systemBlockException = (SystemBlockException) e;
@@ -102,8 +105,8 @@ public class BlockLogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         } else if (e instanceof OverloadFlowException) {
             FlowRule rule = (FlowRule) e.getRule();
             limitData = ((OverloadFlowException) e).getLimitData();
-            //只考虑 qps,不考虑线程数
-            limitData.setLimitValue(node.totalQps());
+            double limitValue = rule.getGrade() == RuleConstant.FLOW_GRADE_THREAD ? (double) node.curThreadNum() : (int) (node.passQps());
+            limitData.setLimitValue(limitValue);
             limitData.setLimitConfigValue(rule.getCount());
         }
         limitData.setResource(resourceWrapper.getName());
