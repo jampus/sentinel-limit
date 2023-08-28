@@ -12,6 +12,7 @@
         <module>sentinel-limit-base</module>
         <module>sentinel-limit-test</module>
         <module>sentinel-limit-spring</module>
+        <module>sentinel-limit-msoa-adapter</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -25,6 +26,11 @@
            <dependency>
                <groupId>com.aibank.wm.framework</groupId>
                <artifactId>sentinel-limit-base</artifactId>
+               <version>0.0.1-SNAPSHOT</version>
+           </dependency>
+           <dependency>
+               <groupId>com.aibank.wm.framework</groupId>
+               <artifactId>sentinel-limit-msoa-adapter</artifactId>
                <version>0.0.1-SNAPSHOT</version>
            </dependency>
        </dependencies>
