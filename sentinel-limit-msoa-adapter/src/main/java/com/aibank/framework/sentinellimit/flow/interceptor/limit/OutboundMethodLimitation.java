@@ -5,10 +5,8 @@ import com.baidu.ub.msoa.container.support.governance.annotation.BundleService;
 import org.aopalliance.intercept.MethodInvocation;
 
 public class OutboundMethodLimitation extends OutboundInterceptor {
-
     @Override
-    protected Object intercept(BundleService bundleService, MethodInvocation methodInvocation) {
-        System.out.println(bundleService);
-        return null;
+    public String getResourceName(BundleService bundleService, MethodInvocation methodInvocation) {
+        return bundleService.method();
     }
 }

@@ -1,12 +1,12 @@
 package com.aibank.framework.sentinellimit.test;
 
-import com.aibank.framework.sentinellimit.flow.proxy.PointcutAdvisorConfig;
+import com.aibank.framework.sentinellimit.flow.proxy.LimitConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;
 
 @SpringBootApplication
-@Import(PointcutAdvisorConfig.class)
+@Import(LimitConfig.class)
 public class TestApplication {
 
     public static void main(String[] args) {

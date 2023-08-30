@@ -7,7 +7,7 @@ import org.aopalliance.intercept.MethodInvocation;
 
 public class InboundMethodLimitation extends InboundInterceptor {
     @Override
-    public Object intercept(BundleService bundleService, MethodInvocation methodInvocation) {
-        return null;
+    public String getResourceName(BundleService bundleService, MethodInvocation methodInvocation) {
+        return bundleService.method();
     }
 }

@@ -1,16 +1,15 @@
 package com.aibank.framework.sentinellimit.flow.proxy;
 
 import com.baidu.ub.msoa.container.support.governance.annotation.BundleService;
-import org.aopalliance.intercept.MethodInterceptor;
+import org.springframework.aop.Advisor;
 import org.springframework.aop.framework.ProxyFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class CachingProxyFactory {
-
     private static Map<String, Object> proxyCache = new HashMap<>();
-    public static synchronized Object getProxy(Object target, Class<?> interfaceType, MethodInterceptor interceptor, BundleService bundleService) {
+
+    public static synchronized Object getProxy(Object target, Class<?> interfaceType, Advisor interceptor,BundleService bundleService) {
         String key = String.format("%s/%s/%s", interfaceType, bundleService.provider(), bundleService.version());
         Object cachedProxy = proxyCache.get(key);
         if (cachedProxy != null) {
@@ -20,8 +19,7 @@ public class CachingProxyFactory {
         ProxyFactory proxyFactory = new ProxyFactory();
         proxyFactory.setInterfaces(interfaceType);
         proxyFactory.setTarget(target);
-        proxyFactory.addAdvice(interceptor);
-        proxyFactory.addAdvisors();
+        proxyFactory.addAdvisors(interceptor);
 
         Object proxy = proxyFactory.getProxy();
         proxyCache.put(key, proxy);

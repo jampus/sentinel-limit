@@ -1,20 +1,18 @@
 package com.aibank.framework.sentinellimit.flow.interceptor;
 
+import com.aibank.framework.sentinellimit.service.RateLimitUtil;
+import com.alibaba.csp.sentinel.EntryType;
 import com.baidu.ub.msoa.container.support.governance.annotation.BundleService;
-import org.aopalliance.intercept.MethodInterceptor;
+import com.baidu.ub.msoa.utils.StringUtil;
 import org.aopalliance.intercept.MethodInvocation;
 
-import java.lang.reflect.Method;
-
-import static com.aibank.framework.sentinellimit.flow.proxy.OutboundBeanPostProcessor.methodBundleServiceMap;
-
-public abstract class OutboundInterceptor implements MethodInterceptor {
-    public Object invoke(MethodInvocation methodInvocation) throws Throwable {
-        Method method = methodInvocation.getMethod();
-        BundleService bundleService = methodBundleServiceMap.get(method);
-        intercept(bundleService, methodInvocation);
-        return methodInvocation.proceed();
+public abstract class OutboundInterceptor implements MsoaBundleServiceInterceptor {
+    public boolean intercept(BundleService bundleService, MethodInvocation methodInvocation) {
+        String resourceName = getResourceName(bundleService, methodInvocation);
+        if (StringUtil.isBlank(resourceName)) {
+            return false;
+        }
+        boolean success = RateLimitUtil.entry(resourceName, EntryType.OUT);
+        return !success;
     }
-
-    protected abstract Object intercept(BundleService bundleService, MethodInvocation methodInvocation);
 }
