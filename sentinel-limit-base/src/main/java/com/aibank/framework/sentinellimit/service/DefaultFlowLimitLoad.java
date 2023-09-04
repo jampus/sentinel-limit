@@ -1,6 +1,7 @@
 package com.aibank.framework.sentinellimit.service;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import com.aibank.framework.sentinellimit.dao.*;
 import com.aibank.framework.sentinellimit.dao.impl.BlockInfoRecordMapperImpl;
 import com.aibank.framework.sentinellimit.dao.impl.FlowRuleMapperImpl;
@@ -23,6 +24,7 @@ import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 
 import javax.sql.DataSource;
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -35,10 +37,13 @@ public class DefaultFlowLimitLoad implements FlowLimitLoad {
     private FlowRuleMapper flowRuleMapper;
     private SystemRuleMapper systemRuleMapper;
 
+    private ScheduledExecutorService datasourceRefreshService;
+
 
     public DefaultFlowLimitLoad(DataSource dataSource, String app) {
         LimitConstants.app = app;
         executorService = new ScheduledThreadPoolExecutor(5, new NamedThreadFactory("sentinel-record-task", true));
+        datasourceRefreshService = Executors.newScheduledThreadPool(1, new NamedThreadFactory("sentinel-datasource-auto-refresh-task", true));
         blockInfoRecordMapper = new BlockInfoRecordMapperImpl(dataSource);
         flowRuleMapper = new FlowRuleMapperImpl(dataSource);
         systemRuleMapper = new SystemRuleMapperImpl(dataSource);
@@ -67,6 +72,7 @@ public class DefaultFlowLimitLoad implements FlowLimitLoad {
 
     public void close() {
         executorService.shutdown();
+        datasourceRefreshService.shutdown();
     }
 
 
@@ -89,7 +95,7 @@ public class DefaultFlowLimitLoad implements FlowLimitLoad {
                 flowRule.forEach(f -> flowRuleMap.putIfAbsent(RateLimitUtil.getRuleId(f), f));
             });
             return flowRuleMap.values().stream().filter(flowRule -> flowRule.getCount() >= 0).collect(Collectors.toList());
-        });
+        }, datasourceRefreshService);
         FlowRuleManager.register2Property(customerDataSource.getProperty());
     }
 
@@ -98,26 +104,29 @@ public class DefaultFlowLimitLoad implements FlowLimitLoad {
         ReadableDataSource<List<FlowRule>, List<FlowRule>> readableDataSource = new CustomerDataSource<>(() -> {
             List<FlowRule> flowRules = flowRuleMapper.getAllOverloadFlowRule().stream().map(s -> {
                 FlowRule flowRule = new FlowRule();
-                BeanUtil.copyProperties(s, flowRule);
+                BeanUtil.copyProperties(s, flowRule, CopyOptions.create().ignoreNullValue());
                 return flowRule;
             }).collect(Collectors.toList());
             return flowRules;
-        });
+        }, datasourceRefreshService);
         OverloadFlowRuleManager.register2Property(readableDataSource.getProperty());
     }
 
     @Override
     public void systemRule() {
-        ReadableDataSource<List<SystemRule>, List<SystemRule>> readableDataSource = new CustomerDataSource<>(() -> systemRuleMapper.getAllRule().stream().map(s -> {
-            SystemRule systemRule = new SystemRule();
-            BeanUtil.copyProperties(s, systemRule);
-            if (s.getSystemOverloadFlag()) {
-                GlobalOverloadConfig.loadConfig(systemRule);
-                return null;
-            } else {
-                return systemRule;
-            }
-        }).filter(Objects::nonNull).collect(Collectors.toList()));
+        ReadableDataSource<List<SystemRule>, List<SystemRule>> readableDataSource = new CustomerDataSource<>(() -> {
+            GlobalOverloadConfig.resetConfig();
+            return systemRuleMapper.getAllRule().stream().map(s -> {
+                SystemRule systemRule = new SystemRule();
+                BeanUtil.copyProperties(s, systemRule, CopyOptions.create().ignoreNullValue());
+                if (s.getSystemOverloadFlag()) {
+                    GlobalOverloadConfig.loadConfig(systemRule);
+                    return null;
+                } else {
+                    return systemRule;
+                }
+            }).filter(Objects::nonNull).collect(Collectors.toList());
+        }, datasourceRefreshService);
         SystemRuleManager.register2Property(readableDataSource.getProperty());
     }
 

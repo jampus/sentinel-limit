@@ -23,7 +23,7 @@ public class BundleServicePostProcessor implements BeanPostProcessor, Initializi
                 proxyFactory.setInterfaces(new Class[]{bundleService.interfaceType()});
                 try {
                     Proxy proxy = (Proxy) proxyFactory.createClass().getConstructor(new Class[0]).newInstance(new Object[0]);
-                    proxy.setHandler((o, method, method1, objects) -> "invoked ");
+                    proxy.setHandler((o, method, method1, objects) -> "invoked");
                     field.setAccessible(true);
                     field.set(bean, proxy);
                 } catch (Exception e) {

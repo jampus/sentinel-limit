@@ -9,6 +9,7 @@ import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
+import com.alibaba.csp.sentinel.util.StringUtil;
 
 public class RateLimitUtil {
 
@@ -31,13 +32,17 @@ public class RateLimitUtil {
         return entry(name, RuleConstant.FLOW_GRADE_QPS, trafficType, null);
     }
 
+    public static boolean entry(String name, String app, EntryType trafficType) {
+        return entry(LimitConstants.CONTEXT_DEFAULT_NAME, app, name, RuleConstant.FLOW_GRADE_QPS, trafficType, null, 1, RuleConstant.CONTROL_BEHAVIOR_DEFAULT, 0);
+    }
+
 
     public static boolean wait(String name) {
         return wait(name, RuleConstant.FLOW_GRADE_THREAD, EntryType.OUT, null, 30000);
     }
 
 
-    public static boolean wait(String name,Double limitCount) {
+    public static boolean wait(String name, Double limitCount) {
         return wait(name, RuleConstant.FLOW_GRADE_THREAD, EntryType.OUT, limitCount, 30000);
     }
 
@@ -83,6 +88,9 @@ public class RateLimitUtil {
      * @return
      */
     public static boolean entry(String context, String origin, String name, int grade, EntryType trafficType, Double limitCount, int batchCount, int controlBehavior, int maxQueueingTimeMs) {
+        if (StringUtil.isEmpty(name)){
+            return true;
+        }
         if (limitCount != null && limitCount > 0) {
             FlowRule flowRule = new FlowRule();
             flowRule.setResource(name);

@@ -1,17 +1,18 @@
 package com.aibank.framework.sentinellimit.flow.interceptor.limit;
 
-import com.baidu.ub.msoa.rpc.domain.dto.RPCRequest;
-import com.baidu.ub.msoa.rpc.domain.dto.RPCResponse;
-import com.baidu.ub.msoa.rpc.interceptor.ProviderInterceptor;
+import com.aibank.framework.sentinellimit.flow.domain.MsoaRequestContext;
+import com.aibank.framework.sentinellimit.flow.interceptor.InboundInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
 
-public class InboundMethodOriginLimitation implements ProviderInterceptor {
+public class InboundMethodOriginLimitation extends InboundInterceptor {
     @Override
-    public void beforeInvoke(RPCRequest rpcRequest) {
-
+    public String getResourceName(MsoaRequestContext msoaRequestContext, MethodInvocation methodInvocation) {
+        return msoaRequestContext.getService() + "_" + msoaRequestContext.getMethod();
     }
 
-    @Override
-    public void afterInvoke(RPCRequest rpcRequest, RPCResponse rpcResponse) {
 
+    @Override
+    public String getOrigin(MsoaRequestContext bundleService, MethodInvocation methodInvocation) {
+        return bundleService.getOriginProvider();
     }
 }

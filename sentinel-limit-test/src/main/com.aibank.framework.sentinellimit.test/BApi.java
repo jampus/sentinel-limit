@@ -1,5 +1,7 @@
 package com.aibank.framework.sentinellimit.test;
 
+import com.aibank.framework.sentinellimit.flow.domain.BaseRequest;
+
 public interface BApi {
-    String say(String name);
+    String say(BaseRequest body);
 }

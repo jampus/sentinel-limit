@@ -12,13 +12,14 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Map;
 
-
+@EnableAspectJAutoProxy(proxyTargetClass = true)
 public class InjectBundleServiceBeanPostProcessor implements BeanPostProcessor, ApplicationContextAware {
     private static final Logger logger = LoggerFactory.getLogger(InjectBundleServiceBeanPostProcessor.class);
 
@@ -42,32 +43,6 @@ public class InjectBundleServiceBeanPostProcessor implements BeanPostProcessor, 
         }
         return bean;
     }
-
-/*
-    private Object injectBundleServiceClass(Object bean) {
-        // 获取原始类
-        Class<?> originalClass = AopProxyUtils.ultimateTargetClass(bean);
-        if (!originalClass.isAnnotationPresent(BundleService.class)) {
-            return bean;
-        }
-        Map<String, InboundInterceptor> interceptorMap = applicationContext.getBeansOfType(InboundInterceptor.class);
-        if (interceptorMap.isEmpty()) {
-            return bean;
-        }
-        List<Advisor> advisorList = interceptorMap.values().stream().map(inboundInterceptor -> {
-            DefaultPointcutAdvisor advisor = new DefaultPointcutAdvisor();
-            advisor.setPointcut(new InboundMatchingPointcut());
-            advisor.setOrder(Integer.MAX_VALUE);
-            advisor.setAdvice(inboundInterceptor);
-            return advisor;
-        }).collect(Collectors.toList());
-
-        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
-        proxyFactoryBean.setTarget(bean);
-        proxyFactoryBean.addAdvisors(advisorList);
-        return proxyFactoryBean.getObject();
-    }
-*/
 
     private void injectBundleServiceField(Object bean) {
         // 获取原始类

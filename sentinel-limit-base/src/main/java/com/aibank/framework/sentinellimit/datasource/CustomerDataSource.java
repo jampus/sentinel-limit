@@ -16,14 +16,15 @@ import java.util.function.Supplier;
 
 public class CustomerDataSource<T> extends AbstractDataSource<T, T> {
     private static Logger logger = LoggerFactory.getLogger(CustomerDataSource.class);
-    private static final ScheduledExecutorService service = Executors.newScheduledThreadPool(1, new NamedThreadFactory("sentinel-datasource-auto-refresh-task", true));
+    private ScheduledExecutorService service ;//= Executors.newScheduledThreadPool(1, new NamedThreadFactory("sentinel-datasource-auto-refresh-task", true));
     protected static long recommendRefreshMs = 3000;
 
     private Supplier<T> supplier;
 
-    public CustomerDataSource(Supplier<T> supplier) {
+    public CustomerDataSource(Supplier<T> supplier, ScheduledExecutorService service) {
         super(source -> source);
         this.supplier = supplier;
+        this.service = service;
         loadInitialConfig();
         startTimerService();
     }

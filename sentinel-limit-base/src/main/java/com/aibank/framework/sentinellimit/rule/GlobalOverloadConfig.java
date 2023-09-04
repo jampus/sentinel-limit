@@ -37,6 +37,16 @@ public class GlobalOverloadConfig {
         }
     }
 
+    public static void resetConfig() {
+        GlobalOverloadConfig.checkSystemStatus = false;
+        GlobalOverloadConfig.maxSystemLoad = Double.MAX_VALUE;
+        GlobalOverloadConfig.maxCpuUsage = Double.MAX_VALUE;
+        GlobalOverloadConfig.maxQps = Double.MAX_VALUE;
+        GlobalOverloadConfig.maxRt = Long.MAX_VALUE;
+        GlobalOverloadConfig.maxThread = Long.MAX_VALUE;
+        GlobalOverloadConfig.checkSystemStatus = false;
+    }
+
     public static double getMaxSystemLoad() {
         return maxSystemLoad;
     }

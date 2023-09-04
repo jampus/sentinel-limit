@@ -1,14 +1,13 @@
 package com.aibank.framework.sentinellimit.flow.interceptor.limit;
 
-import org.springframework.cglib.proxy.MethodInterceptor;
-import org.springframework.cglib.proxy.MethodProxy;
+import com.aibank.framework.sentinellimit.flow.domain.MsoaRequestContext;
+import com.aibank.framework.sentinellimit.flow.interceptor.OutboundInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
 
-import java.lang.reflect.Method;
 
-public class OutboundDestinationLimitation implements MethodInterceptor {
-
+public class OutboundDestinationLimitation extends OutboundInterceptor {
     @Override
-    public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
-        return null;
+    public String getResourceName(MsoaRequestContext msoaRequestContext, MethodInvocation methodInvocation) {
+        return msoaRequestContext.getProvider();
     }
 }

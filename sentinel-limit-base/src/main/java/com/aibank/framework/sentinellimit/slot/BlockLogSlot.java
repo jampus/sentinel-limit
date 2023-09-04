@@ -1,11 +1,13 @@
 package com.aibank.framework.sentinellimit.slot;
 
+import com.aibank.framework.sentinellimit.domain.LimitConstants;
 import com.aibank.framework.sentinellimit.domain.LimitData;
 import com.aibank.framework.sentinellimit.domain.TransIdHolder;
 import com.aibank.framework.sentinellimit.enums.LimitType;
 import com.aibank.framework.sentinellimit.enums.SystemLimitType;
 import com.aibank.framework.sentinellimit.exception.OverloadFlowException;
 import com.alibaba.csp.sentinel.Constants;
+import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.context.Context;
 import com.alibaba.csp.sentinel.log.RecordLog;
 import com.alibaba.csp.sentinel.node.DefaultNode;
@@ -65,8 +67,8 @@ public class BlockLogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         if (e instanceof FlowException) {
             FlowRule rule = (FlowRule) e.getRule();
             limitData.setLimitType(LimitType.flowRule);
-            double limitValue = rule.getGrade() == RuleConstant.FLOW_GRADE_THREAD ? (double) node.curThreadNum() : (int) (node.passQps());
-            limitData.setLimitValue(limitValue);
+            double limitValue = rule.getGrade() == RuleConstant.FLOW_GRADE_THREAD ? (double) node.curThreadNum() : (int) (node.totalQps());
+            limitData.setLimitValue(limitValue + count);
             limitData.setLimitConfigValue(rule.getCount());
         } else if (e instanceof SystemBlockException) {
             SystemBlockException systemBlockException = (SystemBlockException) e;
@@ -105,17 +107,20 @@ public class BlockLogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         } else if (e instanceof OverloadFlowException) {
             FlowRule rule = (FlowRule) e.getRule();
             limitData = ((OverloadFlowException) e).getLimitData();
-            double limitValue = rule.getGrade() == RuleConstant.FLOW_GRADE_THREAD ? (double) node.curThreadNum() : (int) (node.passQps());
-            limitData.setLimitValue(limitValue);
+            double limitValue = rule.getGrade() == RuleConstant.FLOW_GRADE_THREAD ? (double) node.curThreadNum() : (int) (node.totalQps());
+            limitData.setLimitValue(limitValue + count);
             limitData.setLimitConfigValue(rule.getCount());
         }
         limitData.setResource(resourceWrapper.getName());
-        limitData.setEntryType(resourceWrapper.getEntryType());
+
         limitData.setTimestamp(System.currentTimeMillis());
 
-        limitData.setTotalPass(node.totalPass());
-        limitData.setTotalRequest(node.totalRequest());
-        limitData.setTotalBlock(node.blockRequest());
+
+        if (LimitConstants.ANY_RESOURCE.equals(resourceWrapper.getName())) {
+            limitData.setEntryType(EntryType.IN);
+        } else {
+            limitData.setEntryType(resourceWrapper.getEntryType());
+        }
 
         limitData.setTotalQps(node.totalQps());
         limitData.setPassQps(node.passQps());

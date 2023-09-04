@@ -108,22 +108,6 @@ public class BlockInfoEntity {
      */
     private Double blockQps;
 
-    /**
-     * 最近1分钟内的请求数
-     */
-    private Long totalRequest;
-
-    /**
-     * 最近1分钟内通过的请求数量
-     */
-    private Long totalPass;
-
-    /**
-     * 最近1分钟内被拦截的请求数量
-     */
-    private Long totalBlock;
-
-
     private String createTime;
     private String updateTime;
     private String createdBy;
@@ -247,30 +231,6 @@ public class BlockInfoEntity {
 
     public void setBlockQps(Double blockQps) {
         this.blockQps = blockQps;
-    }
-
-    public Long getTotalRequest() {
-        return totalRequest;
-    }
-
-    public void setTotalRequest(Long totalRequest) {
-        this.totalRequest = totalRequest;
-    }
-
-    public Long getTotalPass() {
-        return totalPass;
-    }
-
-    public void setTotalPass(Long totalPass) {
-        this.totalPass = totalPass;
-    }
-
-    public Long getTotalBlock() {
-        return totalBlock;
-    }
-
-    public void setTotalBlock(Long totalBlock) {
-        this.totalBlock = totalBlock;
     }
 
     public String getCreateTime() {

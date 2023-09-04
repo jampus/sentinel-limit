@@ -1,6 +1,7 @@
 package com.aibank.framework.sentinellimit.flow;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import com.aibank.framework.sentinellimit.dao.FlowRuleMapper;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 
@@ -18,7 +19,7 @@ public class DateSourceFlowRuleSupplier implements FlowRuleSupplier {
     public List<FlowRule> getFlowRule() {
         List<FlowRule> flowRules = flowRuleMapper.getAllFlowRule().stream().map(s -> {
             FlowRule flowRule = new FlowRule();
-            BeanUtil.copyProperties(s, flowRule);
+            BeanUtil.copyProperties(s, flowRule, CopyOptions.create().ignoreNullValue());
             return flowRule;
         }).collect(Collectors.toList());
         return flowRules;

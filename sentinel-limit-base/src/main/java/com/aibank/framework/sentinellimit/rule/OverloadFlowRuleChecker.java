@@ -1,5 +1,6 @@
 package com.aibank.framework.sentinellimit.rule;
 
+import com.aibank.framework.sentinellimit.domain.LimitConstants;
 import com.aibank.framework.sentinellimit.domain.LimitData;
 import com.aibank.framework.sentinellimit.domain.TransIdHolder;
 import com.aibank.framework.sentinellimit.enums.LimitType;
@@ -17,6 +18,8 @@ import com.alibaba.csp.sentinel.slots.system.SystemRuleManager;
 import com.alibaba.csp.sentinel.util.function.Function;
 
 import java.util.Collection;
+
+import static com.aibank.framework.sentinellimit.domain.LimitConstants.ANY_RESOURCE;
 
 public class OverloadFlowRuleChecker extends FlowRuleChecker {
 
@@ -57,7 +60,7 @@ public class OverloadFlowRuleChecker extends FlowRuleChecker {
         }
 
         // for inbound traffic only
-        if (resourceWrapper.getEntryType() != EntryType.IN) {
+         if (resourceWrapper.getEntryType() != EntryType.IN && !LimitConstants.ANY_RESOURCE.equals(resourceWrapper.getName())) {
             return null;
         }
         // total qps
